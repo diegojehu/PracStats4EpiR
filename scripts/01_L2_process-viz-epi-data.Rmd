@@ -1,0 +1,131 @@
+---
+title: "Processing & Visualising Epidemiological Data"
+author: "Diego Aguilar-Ramirez"
+date: "`r Sys.Date()`"
+output: 
+  ioslides_presentation:
+    logo: department_main.png
+    css: "styles.css"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+<!-- 
+This is part of setup for footer and footnotes 
+Scripts were extracted from: https://riptutorial.com/r/example/13950/adding-a-footer-to-an-ioslides-presentation
+and: https://stackoverflow.com/questions/42690955/how-to-insert-footnotes-in-ioslides-presentations-using-rmarkdown
+and: https://www.w3schools.com/cssref/pr_text_text-align.ASP
+
+RMarkdown 2.0 cheatsheet here file:///C:/Users/diegoa/Downloads/rmarkdown-2.0.pdf
+-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+      $('slide:not(.title-slide, .backdrop, .segue)').append('<footer label=\"Processing & Visualising Epidemiological Data\"></footer>');    
+    })
+</script>
+
+<script>
+$(document).ready(function() {
+  $('slide:not(.backdrop):not(.title-slide)').append('<div class=\"footnotes\">');
+
+  $('footnote').each(function(index) {
+    var text  = $(this).html();
+    var fnNum = (index+1).toString();
+    $(this).html(fnNum.sup());
+
+    var footnote   = fnNum + '. ' + text + '<br/>';
+    var oldContent = $(this).parents('slide').children('div.footnotes').html();
+    var newContent = oldContent + footnote;
+    $(this).parents('slide').children('div.footnotes').html(newContent);
+  });
+});
+</script>
+
+<style>
+  footer:after {
+    content: attr(label);
+    font-size: 10pt;
+    position: absolute;
+    bottom: 20px;
+    left: 40%;
+    line-height: 1.9;
+  }
+</style>
+
+<style>
+div.footnotes {
+  position: absolute;
+  bottom: 0;
+  margin-bottom: 80px;
+  width: 80%;
+  font-size: 10pt;
+}
+</style>
+
+```{r packages, echo=FALSE}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(gifski)
+```
+
+## Learning objectives {.build}
+- Familiarize with the concept of **workflow** in data science
+- Understand the importance of cleaning (*tidying*) data
+- Learn basic preparation steps for data analyses
+
+## The *workflow* in Data Science<footnote>From R for Data Science: https://r4ds.had.co.nz/index.html</footnote>
+
+```{r fig.width=8, fig.align='center', fig.link="https://r4ds.had.co.nz/introduction.html", echo=F}
+knitr::include_graphics("data-science-wf.png")
+```
+
+## What *is* data cleaning?
+Ensuring that data are suitable for analysis<footnote>https://epirhandbook.com/en/cleaning-data-and-core-functions.html</footnote>  
+
+This usually involves:  
+  - Formatting data (*e.g. names of variables*)  
+  - Selecting data  (*keep only useful variables*)  
+  - Deduplicating data (*duplicate rows*)
+  
+```{r out.width="50%", fig.align='center', echo=F}
+knitr::include_graphics("data_cleaning.png")
+```
+
+## How do data usually look like?
+Well, it's complicated...  
+
+R is an object-oriented language where **objects** are anything
+(constants, data structures, functions, graphs) that can be assigned
+to a variable.<footnote>http://venus.ifca.unican.es/Rintro/dataStruct.html</footnote>  
+```{r fig.width=8, fig.align='center', echo=F}
+knitr::include_graphics("R_data_structures.png")
+```
+In **Epidemiology**, however, most often one encounters data frames and vectors
+
+## Slide with a table
+|Right|Left|Default|Centre|
+|----:|:---|-------|:----:|
+|12|12|12|12|
+|123|123|123|123|
+|1|1|1|1|
+
+## Slide with Animation
+```{r, animation.hook='gifski'}
+for (i in 1:10) {
+  pie(c(i %% 2, 6), col = c('red', 'yellow'), labels = NA)
+}
+
+```
+
+## Sources for learning R
+- The Epidemiologist R Handbook<footnote>https://www.repidemicsconsortium.org/</footnote>
+- R4epis<footnote>https://r4epis.netlify.app//</footnote>
+- RECON: The R Epidemics Consortium<footnote>https://www.repidemicsconsortium.org/</footnote>
+
+## Sources for creating Rmd slides
+
+- https://bookdown.org/yihui/rmarkdown/ioslides-presentation.html
+
+
