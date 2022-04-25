@@ -1,0 +1,185 @@
+---
+title: "01.1_create_training_material"
+author: "Diego Aguilar-Ramirez"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Setup
+```{r}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(gifski, ggplot2, rio, here, janitor, skimr, forcats, lubridate, tidyverse)
+```
+
+# 1. Create datasets used for lecture and practicals
+## 1.1 Load STEPS data from WHO EpiInfo training material
+
+For the course, I have manually exported from Access an `.xlsx` spreadsheet
+called `STEPS_EpiInfo_Test.xlsx` that only contains the test dataset
+as I had trouble importing the original `.mdb` file directly
+into R.
+
+```{r}
+steps_test_raw <- import(here("data", "STEPS_EpiInfo_Test.xlsx"))
+```
+## Quick review of data with `skmir`
+```{r}
+skimr::skim(steps_test)
+```
+
+## Clean and rename
+Format and add descriptive names to columns
+```{r}
+steps_test <- steps_test_raw %>%
+  
+  janitor::clean_names() %>%
+         # New name     # Old name
+  rename(sex          = c1,
+         age          = c3,
+         curr_smkr    = t1,
+         daily_smkr   = t2,
+         curr_alc     = a1,
+         freq_alc     = a2,
+         bp_last_meas = h1,
+         height_cm    = m3,
+         weight_kg    = m4,
+         sbp_1        = m11a,
+         sbp_2        = m12a,
+         sbp_3        = m13a) %>%
+  
+  mutate(sbp = (sbp_1+sbp_2+sbp_3)/3, # Here I simply calculate the mean of the 3 sbp measurements
+         sex_fct = factor(sex, labels = c("Women", "Men"))) # Originally coded as 1 and 2
+```
+
+
+
+## Dataset for Lecture 1 needs to do the following:
+Add implausible values to SBP, only in women
+
+```{r}
+steps_test_lec1 <- steps_test %>%
+  add_row(sbp = 540, sex_fct = as.factor("Women")) %>%
+  add_row(sbp = 535, sex_fct = as.factor("Women")) %>%
+  add_row(sbp = 538, sex_fct = as.factor("Women")) %>%
+  add_row(sbp = 542, sex_fct = as.factor("Women")) %>%
+  add_row(sbp = 540, sex_fct = as.factor("Women"))
+```
+
+```{r}
+plot1a.df <- steps_test_lec1 %>%
+  
+  select(c(sex_fct,sbp)) %>%
+  
+  drop_na() %>%
+  
+  filter(sex_fct=="Women")
+  
+  plot1a <- 
+    ggplot(data = plot1a.df, mapping = aes(x = sbp)) +
+      geom_histogram(binwidth = 5, color = "white", fill = "cadetblue") +
+      #geom_density() +
+      labs(
+        title = "Systolic blood pressure in women",
+        subtitle = stringr::str_glue("N={dim(plot1a.df)[1]}\nTraining WHO STEPS data"),
+        x = "SBP",
+        caption = stringr::str_glue("Mean SBP = {round(mean(plot1a.df$sbp),2)} (SD {round(sd(plot1a.df$sbp),2)}) mmHg")
+      ) +
+      theme_classic() #+
+      #facet_wrap(~sex_fct)
+  plot1a
+```
+
+```{r}
+plot1b.df <- plot1a.df %>%
+  
+  filter(sbp < 250)
+
+  plot1b <- 
+    ggplot(data = plot1b.df, mapping = aes(x = sbp)) +
+      geom_histogram(binwidth = 5, color = "white", fill = "cadetblue") +
+      #geom_density() +
+      labs(
+        title = "Systolic blood pressure in women",
+        subtitle = stringr::str_glue("N={dim(plot1b.df)[1]}\nTraining WHO STEPS data"),
+        x = "SBP",
+        caption = stringr::str_glue("Mean SBP = {round(mean(plot1b.df$sbp),2)} (SD {round(sd(plot1b.df$sbp),2)}) mmHg")
+      ) +
+      theme_classic() #+
+      #facet_wrap(~sex_fct)
+  plot1b
+```
+
+```{r}
+plot2.df <- steps_test_lec1 %>%
+  select(c(sex_fct,sbp)) %>%
+  drop_na() %>%
+  filter(sbp < 250)
+
+  plot2<- 
+    ggplot(data = plot2.df, mapping = aes(x = sbp)) +
+      geom_histogram(binwidth = 5, color = "white", fill = "firebrick") +
+      #geom_density() +
+      labs(
+        title = "Systolic blood pressure in men and women",
+        subtitle = stringr::str_glue("N={dim(plot2.df)[1]}\nTraining WHO STEPS data"),
+        x = "SBP",
+        caption = stringr::str_glue("Mean SBP = {round(mean(plot2.df$sbp),2)} (SD {round(sd(plot2.df$sbp),2)}) mmHg")
+      ) +
+      theme_classic() +
+      #facet_wrap(~sex_fct)
+      geom_vline(
+        xintercept = mean(plot2.df$sbp)+3*sd(plot2.df$sbp),
+        color = "black",
+        linetype = 2,
+        alpha = 0.8) +
+      geom_text(
+        x = mean(plot2.df$sbp)+3.4*sd(plot2.df$sbp),
+        y = 100,
+        label = "3-SD"
+      )
+  
+  plot2
+```
+
+```{r}
+  plot3<- 
+    ggplot(data = plot2.df, mapping = aes(y = sbp)) +
+      geom_boxplot(fill = "firebrick", width = 0.8) +
+      #geom_density() +
+      labs(
+        title = "Systolic blood pressure in men and women",
+        subtitle = stringr::str_glue("N={dim(plot2.df)[1]}\nTraining WHO STEPS data"),
+        y = "SBP",
+        x = "",
+        caption = stringr::str_glue(
+          "Mean SBP = {round(mean(plot2.df$sbp),2)} (SD {round(sd(plot2.df$sbp),2)}) mmHg\nMedian SBP = {round(quantile(plot2.df$sbp[3]),2)} (IQR {round(quantile(plot2.df$sbp[2]),2)}, {round(quantile(plot2.df$sbp[4]),2)}) mmHg")
+      ) +
+      theme_classic() +
+      #facet_wrap(~sex_fct)
+      geom_hline(
+        yintercept = mean(plot2.df$sbp)+3*sd(plot2.df$sbp),
+        color = "black",
+        linetype = 2,
+        alpha = 0.8) +
+      geom_text(
+        y = mean(plot2.df$sbp)+3.4*sd(plot2.df$sbp),
+        x = -0.35,
+        label = "3-SD") +
+      scale_x_discrete(breaks = NULL)
+  plot3
+```
+
+## 1.2 Split dataset into 2
+As part of the learning objectives is to merge datasets,
+I will split the original data and preserve the ID column
+
+```{r}
+steps_test_1 <- dplyr::select(steps_test,one_of("ID", "H1", "M3", "M4", "M11A", "M12A", "M13A"))
+steps_test_2 <- dplyr::select(steps_test,-c(H1:M13A))
+```
+
+## 1.3 Export two datasets

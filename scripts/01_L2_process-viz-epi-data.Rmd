@@ -2,6 +2,8 @@
 title: "Processing & Visualising Epidemiological Data"
 author: "Diego Aguilar-Ramirez"
 date: "`r Sys.Date()`"
+bibliography: references.bib
+link-citations: TRUE
 output: 
   ioslides_presentation:
     logo: department_main.png
@@ -67,7 +69,7 @@ div.footnotes {
 
 ```{r packages, echo=FALSE}
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(gifski)
+pacman::p_load(gifski, ggplot2, tidyverse, rio, here)
 ```
 
 ## Learning objectives {.build}
@@ -77,32 +79,188 @@ pacman::p_load(gifski)
 
 ## The *workflow* in Data Science<footnote>From R for Data Science: https://r4ds.had.co.nz/index.html</footnote>
 
-```{r fig.width=8, fig.align='center', fig.link="https://r4ds.had.co.nz/introduction.html", echo=F}
+```{r out.width="100%", fig.align='center', fig.link="https://r4ds.had.co.nz/introduction.html", echo=F}
 knitr::include_graphics("data-science-wf.png")
 ```
 
-## What *is* data cleaning?
-Ensuring that data are suitable for analysis<footnote>https://epirhandbook.com/en/cleaning-data-and-core-functions.html</footnote>  
+## Why is data cleaning needed? {.build}
 
-This usually involves:  
-  - Formatting data (*e.g. names of variables*)  
-  - Selecting data  (*keep only useful variables*)  
-  - Deduplicating data (*duplicate rows*)
+```{r out.width="75%", fig.align='center', fig.link="https://eastneukanalytics.com/2020/01/26/how-confident-are-in-your-data", echo=F}
+knitr::include_graphics("rubbish-in-rubbish-out-2.png")
+```
+
+- Errors occur (despite *all*)  
+- Good Scientific/Clinical Practice  
+
+## What *is* data cleaning?
+Ensuring that data are suitable for analysis  
+
+Conceptually:  
+```{r out.width="50%", fig.align='center', fig.link="https://journals.plos.org/plosmedicine/article?id=10.1371/journal.pmed.0020267", echo=F}
+knitr::include_graphics("data_cleaning-2.png")
+```
+
+## What *is* data cleaning?
+Data cleaning usually involves (cycles of):  
+
+  - **Organising** (*raw data file(s)*)  
+  - **Merging** (*multiple data sources*)  
+  - **Formatting** (*e.g. names vars, defining type*)  
+  - **Deduplicating** (*i.e. repeated or not properly merged*)  
+  - **Transforming** (*i.e. creating new variables*)
+  - **Selecting** (*i.e. keep only useful variables*)  
   
-```{r out.width="50%", fig.align='center', echo=F}
+```{r out.width="50%", fig.align='center', fig.link="https://epirhandbook.com/en/cleaning-data-and-core-functions.html", echo=F}
 knitr::include_graphics("data_cleaning.png")
 ```
 
-## How do data usually look like?
-Well, it's complicated...  
+## Organising data
+- **Never** work over raw data files  
+- Define/locate directory(s) where raw data file(s) will be stored  
+- If working on your own, consider securing raw data files and working with copies of such files
 
-R is an object-oriented language where **objects** are anything
-(constants, data structures, functions, graphs) that can be assigned
-to a variable.<footnote>http://venus.ifca.unican.es/Rintro/dataStruct.html</footnote>  
-```{r fig.width=8, fig.align='center', echo=F}
-knitr::include_graphics("R_data_structures.png")
+## Organising data & files
+```{r fig.link="https://libguides.princeton.edu/c.php?g=102546&p=930626", out.width="50%", fig.align='center', echo=FALSE}
+knitr::include_graphics("FileStructure.png")
 ```
-In **Epidemiology**, however, most often one encounters data frames and vectors
+
+## Organising data & files
+- Have a clear nomenclature for file names
+```{r fig.link="https://xkcd.com/1459", out.width="30%", fig.align='center', echo=FALSE}
+knitr::include_graphics("img/filenames.png")
+```
+
+## Loading and Merging data
+- R pac  
+
+## Formatting data
+
+## Deduplicating data
+Occasionally, rows might be duplicated:  
+
+- Computer glitch/input error when capturing data (e.g. exact same rows including ID, or exact rows *except* ID)  
+- Participants recruited/surveyed twice  
+- Multiple events or measures for same individual (more careful management)  
+
+## Transforming data
+1. Implausible values  
+2. Extreme values or outliers  
+3. Inconsistent values  
+4. Coding issues  
+5. Transforming and recoding variables  
+
+## Transforming data
+**Implausible values**
+
+Values that could not possible be true  
+
+- SBP of 220 mmHg is *unusual* but possible  
+- SBP of 540 mmHg is is *physiologically impossible*  
+
+Recording error?  
+If not able to find *true* value, set as missing  
+
+## Transforming data
+**Implausible values** - example:
+*Before data cleaning*
+```{r}
+# Example of histogram of SBP with a bin showing an implausible measurement at 540
+# Add mean and SD
+```
+
+## Transforming data
+**Implausible values** - example:
+*After data cleaning*
+```{r}
+# Example of histogram of SBP after setting implausible measurement as missing
+# Add mean and SD
+```
+
+## Transforming data
+**Extreme values or "outliers"**
+- Values outside the *usual* range for the variable 
+  - But values are plausible  
+- Judgement call (*subjective*)  
+  - Define cut-offs  
+- Inspect distributions first  
+
+## Transforming data
+**Extreme values or "outliers"**
+```{r}
+# Insert histogram with sbp data in all
+```
+
+## Transforming data
+**Extreme values or "outliers"**
+```{r}
+# Insert density plot with sbp data overlapping men and women
+```
+
+## Transforming data
+**Extreme values or "outliers"**
+```{r}
+# Insert boxplot of all
+```
+
+## Transforming data
+**Extreme values or "outliers"**
+```{r}
+# Insert boxplot of all
+```
+
+## Transforming data
+**Extreme values or "outliers"**
+```{r out.width="60%", fig.align='center', fig.link="https://lsc.studysixsigma.com/wp-content/uploads/sites/6/2015/12/1435.png", echo=F}
+knitr::include_graphics("boxplot.png")
+```
+
+<!-- The "dots" at the end of the boxplot represent outliers. There are a number of different rules for determining if a point is an outlier, but the method that R and ggplot use is the "1.5 rule". If a data point is: -->
+
+<!-- less than Q1 - 1.5*IQR -->
+<!-- greater than Q3 + 1.5*IQR -->
+<!-- then that point is classed as an "outlier". The whiskers are defined as: -->
+
+<!-- upper whisker = min(max(x), Q_3 + 1.5 * IQR) -->
+
+<!-- lower whisker = max(min(x), Q_1 - 1.5 * IQR) -->
+## Transforming data
+**Extreme values or "outliers"**
+While certain statistical tests are unduly influenced by outliers,
+removing these values require careful consideration  
+
+If values plausible:  
+-  Omits information from analyses
+
+## Transforming data
+3. Inconsistent values  
+
+## Transforming data
+4. Coding issues  
+
+## Transforming data
+5. Transforming and recoding variables  
+
+## Selecting data
+
+**NEVER** work on raw data files
+
+```{r echo=FALSE}
+set.seed(1990)
+bp <- data.frame(
+  sex=factor(rep(c("Women","Men"), each=400)),
+  sbp=round(c(rnorm(400, mean=130, sd=20), rnorm(400, mean=140, sd=20)))
+)
+```
+
+```{r}
+summary(bp)
+```
+
+```{r}
+ggplot2::ggplot(bp, aes(x=sbp)) + 
+  ggplot2::geom_histogram()
+```
+
 
 ## Slide with a table
 |Right|Left|Default|Centre|
@@ -113,10 +271,30 @@ In **Epidemiology**, however, most often one encounters data frames and vectors
 
 ## Slide with Animation
 ```{r, animation.hook='gifski'}
-for (i in 1:10) {
-  pie(c(i %% 2, 6), col = c('red', 'yellow'), labels = NA)
+for (i in c(100,1000,10000,100000,1000000)) {
+  ggplot()
+  #pie(c(i %% 2, 6), col = c('red', 'yellow'), labels = NA)
 }
 
+bp <- data.frame(
+  sex=factor(rep(c("Women","Men"), each=200)),
+  sbp=round(c(rnorm(200, mean=130, sd=20), rnorm(200, mean=140, sd=20)))
+)
+```
+
+## Ethical considerations of data cleaning
+>*"Data cleaning can* ***never*** *be a cure for poor study design or study conduct. Concerns about where to draw the line between* ***data manipulation*** *and* ***responsible data editing*** *are legitimate. Yet all studies, no matter how well designed and implemented, have to deal with errors from various sources and their effects on study results."*
+
+>*"...description of data cleaning"* should *"be a standard part of reporting statistical methods."*
+<footnote>[@broeck2005]</footnote>
+
+## Reproducible Research
+Replication is hard, but necessary for better science!  
+
+Scripting **everything** is essential for reproducible research.  
+
+```{r out.width="60%", fig.align='center', fig.link="https://rstudio-pubs-static.s3.amazonaws.com/157089_504d61c69ada43e8b9f67a0979d43c48.html", echo=F}
+knitr::include_graphics("rep-research-pipeline.png")
 ```
 
 ## Sources for learning R
@@ -128,4 +306,15 @@ for (i in 1:10) {
 
 - https://bookdown.org/yihui/rmarkdown/ioslides-presentation.html
 
+<!-- For practical -->
+## How do data usually look like?
+Well, it's complicated...  
 
+R is an object-oriented language where **objects** are anything
+(constants, data structures, functions, graphs) that can be assigned
+to a variable.  
+```{r fig.width=8, fig.align='center', fig.link="http://venus.ifca.unican.es/Rintro/dataStruct.html",echo=F}
+knitr::include_graphics("R_data_structures.png")
+```
+
+## Bibliography
