@@ -10,9 +10,11 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Setup
+Follow the instructions here[https://support.rstudio.com/hc/en-us/articles/200526207-Using-RStudio-Projects]
 ```{r}
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(gifski, ggplot2, rio, here, janitor, skimr, forcats, lubridate, tidyverse)
+if(webshot::is_phantomjs_installed()==F)webshot::install_phantomjs()
+pacman::p_load(gifski, ggplot2, rio, here, janitor, skimr, forcats, lubridate, tidyverse, gtsummary, rstatix, flextable, gt, webshot)
 ```
 
 # 1. Create datasets used for lecture and practicals
@@ -28,7 +30,7 @@ steps_test_raw <- import(here("data", "STEPS_EpiInfo_Test.xlsx"))
 ```
 ## Quick review of data with `skmir`
 ```{r}
-skimr::skim(steps_test)
+skimr::skim(steps_test_raw)
 ```
 
 ## Clean and rename
@@ -52,29 +54,131 @@ steps_test <- steps_test_raw %>%
          sbp_3        = m13a) %>%
   
   mutate(sbp = (sbp_1+sbp_2+sbp_3)/3, # Here I simply calculate the mean of the 3 sbp measurements
-         sex_fct = factor(sex, labels = c("Women", "Men"))) # Originally coded as 1 and 2
+         sex_fct = factor(sex, labels = c("Men", "Women"))) # Originally coded as 1 and 2
 ```
 
 
 
 ## Dataset for Lecture 1 needs to do the following:
-Add implausible values to SBP, only in women
+###Add implausible values to SBP, only in women
 
 ```{r}
 steps_test_lec1 <- steps_test %>%
+  select(c(sex_fct,sbp,sex)) %>%
+  drop_na() %>%
   add_row(sbp = 540, sex_fct = as.factor("Women")) %>%
-  add_row(sbp = 535, sex_fct = as.factor("Women")) %>%
+  add_row(sbp = 538, sex_fct = as.factor("Women")) %>%
+  add_row(sbp = 542, sex_fct = as.factor("Women")) %>%
+  add_row(sbp = 540, sex_fct = as.factor("Women")) %>%
+  add_row(sbp = 538, sex_fct = as.factor("Women")) %>%
+  add_row(sbp = 542, sex_fct = as.factor("Women")) %>%
+  add_row(sbp = 540, sex_fct = as.factor("Women")) %>%
   add_row(sbp = 538, sex_fct = as.factor("Women")) %>%
   add_row(sbp = 542, sex_fct = as.factor("Women")) %>%
   add_row(sbp = 540, sex_fct = as.factor("Women"))
 ```
+### Make table with mean SBP by sex at different cleaning steps
+```{r}
+#Make table, then export as png, adding p values for differences in mean
+step.table <- c()
+model.names <- c("Before cleaning", "After dropping implausible values", "After dropping outliers")
+sd.3 <- mean(na.omit(steps_test_lec1$sbp[steps_test_lec1$sbp<250])) + 3* sd(na.omit(steps_test_lec1$sbp[steps_test_lec1$sbp<250]))
+df.list <- list(
+  steps_test_lec1,
+  filter(steps_test_lec1, sbp <250),
+  filter(steps_test_lec1, sbp < sd.3)
+)
 
+for (i in 1:length(model.names)){
+mod.name <- model.names[i]
+mean_men <- stringr::str_glue("{round(mean(df.list[[i]]$sbp[df.list[[i]]$sex_fct=='Men'],na.rm=T),1)} ({round(sd(df.list[[i]]$sbp[df.list[[i]]$sex_fct=='Men'],na.rm=T), 1)})")
+mean_women <- stringr::str_glue("{round(mean(df.list[[i]]$sbp[df.list[[i]]$sex_fct=='Women'],na.rm=T),1)} ({round(sd(df.list[[i]]$sbp[df.list[[i]]$sex_fct=='Women'],na.rm=T), 1)})")
+diff <- stringr::str_glue("{round(mean(df.list[[i]]$sbp[df.list[[i]]$sex_fct=='Men'],na.rm=T) - mean(df.list[[i]]$sbp[df.list[[i]]$sex_fct=='Women'],na.rm=T), 1)} ({round(t.test(sbp ~ sex_fct,data=df.list[[i]])[[4]],1)[1]}, {round(t.test(sbp ~ sex_fct,data=df.list[[i]])[[4]],1)[2]})")
+t_t <- round(t.test(sbp ~ sex_fct, data=df.list[[i]])[[3]], 3)
+if(t_t<0.001)t_t <- "<0.001"
+build.df <- data.frame(
+  "Model"=mod.name,
+  "Men"=mean_men,
+  "Women"=mean_women,
+  "Diff_in_means"=diff,
+  "p-val"=t_t)
+
+step.table <- rbind(step.table,build.df)
+}
+```
+
+Export ste-pwise populated tables as png
+```{r}
+step.table.1 <-  
+  step.table[1,] %>%
+  flextable() %>%
+  autofit() %>%
+  add_header_row(
+    top=TRUE,
+    values=c("",
+             "Mean (SD)",
+             "",
+             "",
+             "")) %>%
+  set_header_labels(
+    Model = "",
+    Men = "Men",
+    Women = "Women",
+    Diff_in_means = "Difference in means (95% CI)",
+    p.val = "p-value") %>%
+  merge_at(i=1, j=2:3,part="header") %>%
+  flextable::align(align="center",j=c(2:3),part="header") %>%
+  bold(i=1,bold=TRUE,part="header") %>%
+  save_as_image(path = "figs/step-tbl-1.png")
+
+step.table.2 <- 
+  step.table[1:2,] %>%
+  flextable() %>%
+  autofit() %>%
+  add_header_row(
+    top=TRUE,
+    values=c("",
+             "Mean (SD)",
+             "",
+             "",
+             "")) %>%
+  set_header_labels(
+    Model = "",
+    Men = "Men",
+    Women = "Women",
+    Diff_in_means = "Difference in means (95% CI)",
+    p.val = "p-value") %>%
+  merge_at(i=1, j=2:3,part="header") %>%
+  flextable::align(align="center",j=c(2:3),part="header") %>%
+  bold(i=1,bold=TRUE,part="header") %>%
+  save_as_image(path = "figs/step-tbl-2.png")
+
+step.table.3 <- 
+  step.table %>%
+  flextable() %>%
+  autofit() %>%
+  add_header_row(
+    top=TRUE,
+    values=c("",
+             "Mean (SD)",
+             "",
+             "",
+             "")) %>%
+  set_header_labels(
+    Model = "",
+    Men = "Men",
+    Women = "Women",
+    Diff_in_means = "Difference in means (95% CI)",
+    p.val = "p-value") %>%
+  merge_at(i=1, j=2:3,part="header") %>%
+  flextable::align(align="center",j=c(2:3),part="header") %>%
+  bold(i=1,bold=TRUE,part="header") %>%
+  save_as_image(path = "figs/step-tbl-3.png")
+```
+
+### SBP in women with implausible values 
 ```{r}
 plot1a.df <- steps_test_lec1 %>%
-  
-  select(c(sex_fct,sbp)) %>%
-  
-  drop_na() %>%
   
   filter(sex_fct=="Women")
   
@@ -84,7 +188,7 @@ plot1a.df <- steps_test_lec1 %>%
       #geom_density() +
       labs(
         title = "Systolic blood pressure in women",
-        subtitle = stringr::str_glue("N={dim(plot1a.df)[1]}\nTraining WHO STEPS data"),
+        subtitle = stringr::str_glue("N={dim(plot1a.df)[1]}\nWHO STEPS training dataset"),
         x = "SBP",
         caption = stringr::str_glue("Mean SBP = {round(mean(plot1a.df$sbp),2)} (SD {round(sd(plot1a.df$sbp),2)}) mmHg")
       ) +
@@ -92,7 +196,12 @@ plot1a.df <- steps_test_lec1 %>%
       #facet_wrap(~sex_fct)
   plot1a
 ```
+Save
+```{r}
+ggsave(plot1a, filename = here("figs","plot1a.png"), width = 5, height = 4)
+```
 
+### SBP in women without implausible values
 ```{r}
 plot1b.df <- plot1a.df %>%
   
@@ -104,7 +213,7 @@ plot1b.df <- plot1a.df %>%
       #geom_density() +
       labs(
         title = "Systolic blood pressure in women",
-        subtitle = stringr::str_glue("N={dim(plot1b.df)[1]}\nTraining WHO STEPS data"),
+        subtitle = stringr::str_glue("N={dim(plot1b.df)[1]}\nWHO STEPS training dataset"),
         x = "SBP",
         caption = stringr::str_glue("Mean SBP = {round(mean(plot1b.df$sbp),2)} (SD {round(sd(plot1b.df$sbp),2)}) mmHg")
       ) +
@@ -112,11 +221,14 @@ plot1b.df <- plot1a.df %>%
       #facet_wrap(~sex_fct)
   plot1b
 ```
+Save
+```{r}
+ggsave(plot1b, filename = here("figs","plot1b.png"), width = 5, height = 4)
+```
 
+### SBP in men & women (histogram)
 ```{r}
 plot2.df <- steps_test_lec1 %>%
-  select(c(sex_fct,sbp)) %>%
-  drop_na() %>%
   filter(sbp < 250)
 
   plot2<- 
@@ -125,7 +237,7 @@ plot2.df <- steps_test_lec1 %>%
       #geom_density() +
       labs(
         title = "Systolic blood pressure in men and women",
-        subtitle = stringr::str_glue("N={dim(plot2.df)[1]}\nTraining WHO STEPS data"),
+        subtitle = stringr::str_glue("N={dim(plot2.df)[1]}\nWHO STEPS training dataset"),
         x = "SBP",
         caption = stringr::str_glue("Mean SBP = {round(mean(plot2.df$sbp),2)} (SD {round(sd(plot2.df$sbp),2)}) mmHg")
       ) +
@@ -144,6 +256,10 @@ plot2.df <- steps_test_lec1 %>%
   
   plot2
 ```
+Save
+```{r}
+ggsave(plot2, filename = here("figs","plot2.png"), width = 5, height = 4)
+```
 
 ```{r}
   plot3<- 
@@ -152,7 +268,7 @@ plot2.df <- steps_test_lec1 %>%
       #geom_density() +
       labs(
         title = "Systolic blood pressure in men and women",
-        subtitle = stringr::str_glue("N={dim(plot2.df)[1]}\nTraining WHO STEPS data"),
+        subtitle = stringr::str_glue("N={dim(plot2.df)[1]}\nWHO STEPS training dataset"),
         y = "SBP",
         x = "",
         caption = stringr::str_glue(
@@ -172,6 +288,11 @@ plot2.df <- steps_test_lec1 %>%
       scale_x_discrete(breaks = NULL)
   plot3
 ```
+Save
+```{r}
+ggsave(plot3, filename = here("figs","plot3.png"), width = 5, height = 4)
+```
+
 
 ## 1.2 Split dataset into 2
 As part of the learning objectives is to merge datasets,

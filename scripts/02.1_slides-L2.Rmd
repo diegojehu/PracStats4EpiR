@@ -6,7 +6,7 @@ bibliography: references.bib
 link-citations: TRUE
 output: 
   ioslides_presentation:
-    logo: department_main.png
+    logo: department_main_t.png
     css: "styles.css"
 ---
 
@@ -69,71 +69,180 @@ div.footnotes {
 
 ```{r packages, echo=FALSE}
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(gifski, ggplot2, tidyverse, rio, here)
+if (!require("emo")) devtools::install_github("hadley/emo")
+pacman::p_load(devtools, gifski, ggplot2, tidyverse, rio, here, emo)
 ```
 
 ## Learning objectives {.build}
-- Familiarize with the concept of **workflow** in data science
-- Understand the importance of cleaning (*tidying*) data
-- Learn basic preparation steps for data analyses
+
+- Familiarize with **workflow** concept for data processing  
+- Understand the **importance** of cleaning data  
+- Learn **basic preparation steps** for data analyses (with a statistical perspective)  
+- Consider **ethical implications** of data cleaning  
 
 ## The *workflow* in Data Science<footnote>From R for Data Science: https://r4ds.had.co.nz/index.html</footnote>
 
 ```{r out.width="100%", fig.align='center', fig.link="https://r4ds.had.co.nz/introduction.html", echo=F}
-knitr::include_graphics("data-science-wf.png")
+knitr::include_graphics("img/data-science-wf.png")
 ```
 
 ## Why is data cleaning needed? {.build}
 
 ```{r out.width="75%", fig.align='center', fig.link="https://eastneukanalytics.com/2020/01/26/how-confident-are-in-your-data", echo=F}
-knitr::include_graphics("rubbish-in-rubbish-out-2.png")
+knitr::include_graphics("img/rubbish-in-rubbish-out-2.png")
 ```
 
 - Errors occur (despite *all*)  
 - Good Scientific/Clinical Practice  
 
-## What *is* data cleaning?
-Ensuring that data are suitable for analysis  
+## What *is* data cleaning? {.smaller}
+**Ensuring** that data are suitable for analysis  
 
-Conceptually:  
-```{r out.width="50%", fig.align='center', fig.link="https://journals.plos.org/plosmedicine/article?id=10.1371/journal.pmed.0020267", echo=F}
-knitr::include_graphics("data_cleaning-2.png")
-```
-
-## What *is* data cleaning?
 Data cleaning usually involves (cycles of):  
 
-  - **Organising** (*raw data file(s)*)  
-  - **Merging** (*multiple data sources*)  
-  - **Formatting** (*e.g. names vars, defining type*)  
-  - **Deduplicating** (*i.e. repeated or not properly merged*)  
-  - **Transforming** (*i.e. creating new variables*)
-  - **Selecting** (*i.e. keep only useful variables*)  
+  - **Organising data (& other files)**   
+  - **Loading and merging**   
+  - **Understanding and formatting**   
+  - **Deduplicating**   
+  - **Transforming **  
+  - **Selecting**  
   
 ```{r out.width="50%", fig.align='center', fig.link="https://epirhandbook.com/en/cleaning-data-and-core-functions.html", echo=F}
-knitr::include_graphics("data_cleaning.png")
+knitr::include_graphics("img/data_cleaning.png")
 ```
 
-## Organising data
-- **Never** work over raw data files  
-- Define/locate directory(s) where raw data file(s) will be stored  
-- If working on your own, consider securing raw data files and working with copies of such files
+## Organising data & other files {.smaller}
+A clear nomenclature for file names is essential to avoid errors<footnote>https://datamanagement.hms.harvard.edu/collect/file-naming-conventions</footnote>  
 
-## Organising data & files
-```{r fig.link="https://libguides.princeton.edu/c.php?g=102546&p=930626", out.width="50%", fig.align='center', echo=FALSE}
-knitr::include_graphics("FileStructure.png")
-```
-
-## Organising data & files
-- Have a clear nomenclature for file names
-```{r fig.link="https://xkcd.com/1459", out.width="30%", fig.align='center', echo=FALSE}
+```{r fig.link="https://xkcd.com/1459", out.width="25%", fig.align='center', echo=FALSE}
 knitr::include_graphics("img/filenames.png")
 ```
 
-## Loading and Merging data
-- R pac  
+## Organising data & other files {.smaller}
 
-## Formatting data
+Have a clear nomenclature for file names:  
+
+- **No spaces**  
+- **No special characters** (`.`,`-` or `_`)  
+- **Self-descriptive**  
+- **Embed logic**  
+
+**Examples**:  
+
+- No naming convention:  
+`FINAL_script__clean-survey Mexico City 2015.R`  
+
+- Naming convention:  
+`01.1_merge-survey-data_MC-2015.R`    
+`01.2_clean-survey-data_MC-2015.R`     
+`02.1_main-analyses_MC-2015.R`    
+`02.2_sens-analyses_MC-2015.R`    
+`03.1_make-figures_MC-2015.R`   
+`03.2_make-tables_MC-2015.R`    
+ 
+## Organising data & other files
+```{r fig.link="https://libguides.princeton.edu/c.php?g=102546&p=930626", out.width="50%", fig.align='center', echo=FALSE}
+knitr::include_graphics("img/FileStructure.png")
+```
+
+## Organising data & other files {.smaller}
+
+**Consistency** and **logic** are key!  
+
+- Facilitate finding files  
+- Faster coding  
+- Easy to read for others  
+
+**Example:** all my `~/my_project/` folders tend to have my R scripts in the root folder and have (at least) 3 sub-folders:  
+
+- `~/my_project/data/`  
+- `~/my_project/output/`  
+- `~/my_project/manuscript/`
+
+<div class="red2">
+**IMPORTANT!**  
+</div>
+- **Never** work over raw data files  
+- Define/locate directory(s) where raw data file(s) will be stored and consider working with copies of such files  
+
+## Organising data & other files
+<div class="red2">
+**SOLUTION!**
+</div>
+Use **R Project**<footnote>https://epirhandbook.com/en/r-projects.html</footnote>   
+
+- Enables work in a self-contained folder  
+- Keeps all scripts, data files, outputs, and history in sub-folders  
+- The *working directory* is the project's root folder  
+
+More on practical...  
+
+## Loading and Merging data {.smaller}
+
+**Loading data into R**:  
+
+The R `r emo::ji("package")` **here** and **rio** facilitate defining relative file paths and importing (and exporting) data (work nicely with R Projects)  
+
+- [**rio**](https://cran.r-project.org/web/packages/rio/index.html) functions `import()` and `export()` handle many different file types (.csv, .tsv, .xlsx)  
+
+- [**here**](https://cran.r-project.org/web/packages/here/index.html) function `here()` allows description
+of location of files in a given R project in relation to the project's *root directory*  
+
+Instead of having to do:
+```{r, eval=F, echo=T}
+my_dataset <- import("C:/User/path/to/R-project-folder/data/steps-training-data.csv"))
+```
+
+A combination of both **rio** and **here** would look like this:
+```{r, eval=F, echo=T}
+my_dataset <- import(here("data", "steps-training-data.csv"))
+```
+## Loading and Merging data {.smaller}
+Often, epidemiological data comes from **multiple sources**:  
+
+- Questionnaire data from recruitment  
+- Biological sample results  
+- Linkage to clinical/mortality records 
+  
+  
+How do data usually look like in `R`?
+
+`R` is an object-oriented language where **objects** are anything
+(constants, data structures, functions, graphs) that can be assigned
+to a variable  
+
+```{r out.width="35%", fig.align='center', fig.link="http://venus.ifca.unican.es/Rintro/dataStruct.html",echo=F}
+knitr::include_graphics("img/R_data_structures.png")
+```
+
+## Loading and Merging data 
+
+Three main approaches to merging or joining datasets:  
+
+- Common identifier
+
+  - The function `left_join()` from the [**dplyr**](https://dplyr.tidyverse.org/) package is useful for merging based on common identifier (**more on practical**)  
+  
+- Probabilistic  
+- Binding or appending  
+
+## Understanding and formatting data  
+**Data loaded!!!**  
+
+So...what's up with this dataset?  
+
+Have a quick look!  
+
+- **Skim** package to see what the data looks like  
+- May want to 'have a look' *before* merging different datasets
+
+## Understanding and formatting data  
+**Types of variables in epidemiology**  
+
+- Continuous (numerical or integer)  
+- Categorical (factors, **forcats**)  
+- Dates (**lubridate**)  
+- Character (**stringr**, **glue**)  
 
 ## Deduplicating data
 Occasionally, rows might be duplicated:  
@@ -143,14 +252,29 @@ Occasionally, rows might be duplicated:
 - Multiple events or measures for same individual (more careful management)  
 
 ## Transforming data
+<div class="red2">
+**Consider the following scenario**
+</div>
+Does SBP vary in men and women?  
+
+```{r out.width="75%", fig.align='center', echo=F}
+knitr::include_graphics("figs/step-tbl-1.png")
+```
+
+Can **'untidy'** data affect analyses?  
+
+## Transforming data
+**Usually influenced by statistical concepts**  
+
 1. Implausible values  
 2. Extreme values or outliers  
 3. Inconsistent values  
-4. Coding issues  
-5. Transforming and recoding variables  
+4. Transforming and recoding variables  
 
 ## Transforming data
+<div class="red2">
 **Implausible values**
+</div>
 
 Values that could not possible be true  
 
@@ -158,60 +282,68 @@ Values that could not possible be true
 - SBP of 540 mmHg is is *physiologically impossible*  
 
 Recording error?  
+
 If not able to find *true* value, set as missing  
 
 ## Transforming data
-**Implausible values** - example:
+<div class="red2">**Implausible values**</div>  
+
 *Before data cleaning*
-```{r}
-# Example of histogram of SBP with a bin showing an implausible measurement at 540
-# Add mean and SD
+
+```{r out.width="60%", fig.align='center', echo=F}
+knitr::include_graphics("figs/plot1a.png")
 ```
 
+
 ## Transforming data
-**Implausible values** - example:
+<div class="red2">**Implausible values**</div>  
+
 *After data cleaning*
-```{r}
-# Example of histogram of SBP after setting implausible measurement as missing
-# Add mean and SD
+```{r out.width="60%", fig.align='center', echo=F}
+knitr::include_graphics("figs/plot1b.png")
 ```
 
 ## Transforming data
+<div class="red2">
+**Implausible values**
+</div>
+Does SBP vary in men and women?  
+
+```{r out.width="75%", fig.align='center', echo=F}
+knitr::include_graphics("figs/step-tbl-2.png")
+```
+
+
+## Transforming data
+<div class="red2">
 **Extreme values or "outliers"**
-- Values outside the *usual* range for the variable 
+</div>  
+
+- Values outside the *usual* range for the variable  
   - But values are plausible  
 - Judgement call (*subjective*)  
   - Define cut-offs  
 - Inspect distributions first  
 
 ## Transforming data
-**Extreme values or "outliers"**
-```{r}
-# Insert histogram with sbp data in all
+<div class="red2">**Extreme values or "outliers"**</div>  
+```{r out.width="75%", fig.align='center', echo=F}
+knitr::include_graphics("figs/plot2.png")
 ```
 
-## Transforming data
-**Extreme values or "outliers"**
-```{r}
-# Insert density plot with sbp data overlapping men and women
-```
 
 ## Transforming data
-**Extreme values or "outliers"**
-```{r}
-# Insert boxplot of all
+<div class="red2">**Extreme values or "outliers"**</div>  
+```{r out.width="75%", fig.align='center', echo=F}
+knitr::include_graphics("figs/plot3.png")
 ```
 
-## Transforming data
-**Extreme values or "outliers"**
-```{r}
-# Insert boxplot of all
-```
 
 ## Transforming data
-**Extreme values or "outliers"**
-```{r out.width="60%", fig.align='center', fig.link="https://lsc.studysixsigma.com/wp-content/uploads/sites/6/2015/12/1435.png", echo=F}
-knitr::include_graphics("boxplot.png")
+<div class="red2">**Extreme values or "outliers"**</div>  
+\
+```{r out.width="75%", fig.align='center', fig.link="https://lsc.studysixsigma.com/wp-content/uploads/sites/6/2015/12/1435.png", echo=F}
+knitr::include_graphics("img/boxplot.png")
 ```
 
 <!-- The "dots" at the end of the boxplot represent outliers. There are a number of different rules for determining if a point is an outlier, but the method that R and ggplot use is the "1.5 rule". If a data point is: -->
@@ -224,25 +356,42 @@ knitr::include_graphics("boxplot.png")
 
 <!-- lower whisker = max(min(x), Q_1 - 1.5 * IQR) -->
 ## Transforming data
-**Extreme values or "outliers"**
-While certain statistical tests are unduly influenced by outliers,
-removing these values require careful consideration  
+<div class="red2">
+**Implausible values**
+</div>
+Does SBP vary in men and women?  
 
+```{r out.width="75%", fig.align='center', echo=F}
+knitr::include_graphics("figs/step-tbl-2.png")
+```
+
+## Transforming data 
+<div class="red2">**Extreme values or "outliers"**</div>  
+\
+- Certain statistical tests are unduly influenced by outliers  
+- Removing these values requires careful consideration  
+\
+<div class="centered">**What are the possible issues with this approach?**</div>  
+\
 If values plausible:  
--  Omits information from analyses
+\
+- Would omit information from analyses  
+- Limits generalisability of results  
+- Could look like 'fixing' your data  
+\
+**If extreme values removed, this need to be clearly documented
+and reported (justify decision)**  
 
 ## Transforming data
-3. Inconsistent values  
+<div class="red2">**Inconsistent values**</div>  
 
 ## Transforming data
-4. Coding issues  
+<div class="red2">**Coding issues**</div>  
 
 ## Transforming data
-5. Transforming and recoding variables  
+<div class="red2">**Transforming and recoding variables**</div>  
 
 ## Selecting data
-
-**NEVER** work on raw data files
 
 ```{r echo=FALSE}
 set.seed(1990)
@@ -281,6 +430,12 @@ bp <- data.frame(
   sbp=round(c(rnorm(200, mean=130, sd=20), rnorm(200, mean=140, sd=20)))
 )
 ```
+## What *is* data cleaning?
+
+Conceptually:  
+```{r out.width="50%", fig.align='center', fig.link="https://journals.plos.org/plosmedicine/article?id=10.1371/journal.pmed.0020267", echo=F}
+knitr::include_graphics("img/data_cleaning-2.png")
+```
 
 ## Ethical considerations of data cleaning
 >*"Data cleaning can* ***never*** *be a cure for poor study design or study conduct. Concerns about where to draw the line between* ***data manipulation*** *and* ***responsible data editing*** *are legitimate. Yet all studies, no matter how well designed and implemented, have to deal with errors from various sources and their effects on study results."*
@@ -294,7 +449,7 @@ Replication is hard, but necessary for better science!
 Scripting **everything** is essential for reproducible research.  
 
 ```{r out.width="60%", fig.align='center', fig.link="https://rstudio-pubs-static.s3.amazonaws.com/157089_504d61c69ada43e8b9f67a0979d43c48.html", echo=F}
-knitr::include_graphics("rep-research-pipeline.png")
+knitr::include_graphics("img/rep-research-pipeline.png")
 ```
 
 ## Sources for learning R
@@ -307,14 +462,5 @@ knitr::include_graphics("rep-research-pipeline.png")
 - https://bookdown.org/yihui/rmarkdown/ioslides-presentation.html
 
 <!-- For practical -->
-## How do data usually look like?
-Well, it's complicated...  
-
-R is an object-oriented language where **objects** are anything
-(constants, data structures, functions, graphs) that can be assigned
-to a variable.  
-```{r fig.width=8, fig.align='center', fig.link="http://venus.ifca.unican.es/Rintro/dataStruct.html",echo=F}
-knitr::include_graphics("R_data_structures.png")
-```
 
 ## Bibliography
