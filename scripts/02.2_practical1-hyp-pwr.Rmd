@@ -1,0 +1,547 @@
+---
+title: "Practical 2 - Estimation, hypothesis testing, and power"
+author: "Sarah Lewington & Diego Aguilar-Ramirez"
+date: "`r format(Sys.Date())`"
+output:
+  html_document:
+    df_print: paged
+    theme: journal
+    toc: true
+    toc_float: true
+    toc_collapsed: true
+    toc_depth: 2
+  pdf_document: default
+---
+<!-- --- -->
+<!-- title: "Practical 2 - Estimation, hypothesis testing, and power" -->
+<!-- author: "Sarah Lewington & Diego Aguilar-Ramirez" -->
+<!-- date: "`r format(Sys.Date())`" -->
+<!-- output: -->
+<!--   pdf_document: -->
+<!--     df_print: paged -->
+<!--     toc: true -->
+<!--     toc_depth: 2 -->
+<!--     latex_engine: xelatex #Added this as pdflatex (default) could not process emoji unicode -->
+<!-- --- -->
+
+
+
+```{r setup, include=FALSE}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(devtools,rio,here,tidyverse)
+if (!require("emo")) devtools::install_github("hadley/emo")
+pacman::p_load(knitr,emo,skimr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+> **DISCLAIMER** This teaching material is still in development. Please contact the author
+to report mistakes and for general feedback at diego.aguilar-ramirez@ndph.ox.ac.uk
+
+# 1. Set-up
+
+## Basic descriptive statistics of the Whitehall Resurvey Study baseline data (1997)
+
+> In this section you will get to know the Whitehall data by calculating some basic descriptive statistics. This will require you to revisit some of the commands you learned in the **Pre-course practical** and in **Practical 1**.  
+
+The Whitehall Resurvey Study is a cohort follow-on study to the original Whitehall study set up in the 1960s, which followed London based male civil servants with a view to investigating cardiovascular disease and mortality. This resurvey in 1997 was conducted to assess the predictive value of blood pressure and blood lipids in old age. It contains information on 4,329 individuals, and the variables are summarised in the table below.  
+
+```{r echo=F, message=F}
+w.hall.data <- import(here("data","Whitehall_like-Baseline.csv"), na.strings = ".")
+skim.w.hall.data <- skim(w.hall.data)
+desc <- c(
+  "Participant ID in this dataset",
+  "Age",
+  "Prior disease: heart attack diagnosed",
+  "Prior disease: angina diagnosed",
+  "Prior disease: stroke diagnosed",
+  "Prior disease: diabetes diagnosed",
+  "Prior disease: cancer diagnosed",
+  "Systolic blood pressure",
+  "Body-mass index (kg/m^2)",
+  "Current smoker (1=yes, 0=no)",
+  "HDL cholesterol (mmol/L)",
+  "LDL cholesterol (mmol/L)",
+  "ApoB (g/L)",
+  "ApoA1 (g/L)",
+  "Total cholesterol (mmol/L)",
+  "C-reactive protein (mmol/l)",
+  "Vitamin D [25(OH)D] nmol/L"
+)
+name <- c(
+  "WHL1_D",
+  "AGE",
+  "HATTACK",
+  "ANGINA",
+  "STROKE",
+  "DIAB",
+  "CANCER",
+  "SBP",
+  "BMI",
+  "CURRSMOKER",
+  "HDLC",
+  "LDLC",
+  "APOB",
+  "APOA1",
+  "CHOL",
+  "CPR",
+  "VitD"
+)
+data.t <- data.frame(
+  Name=name,
+  Description=desc
+)
+
+```
+```{r echo=F}
+knitr::kable(data.t,
+             caption = "List of variables in Whitehall data set")
+```
+## 1.1 Load the dataset
+ 
+Be aware of where you have downloaded and saved your file to. If you are unsure of the path, find the file, right click, hit ‘Properties’ on the menu, and then copy the file path under the heading ‘Location’. Ideally, you will have saved your data set within your **R Project folder** (see Pre-course material).  
+
+Open R and open the R Project you have been using for the course.  
+
+Let's import the Whitehall data set as we have done before.  
+
+First, let's load the packages we will use:  
+```{r eval=F, message=F}
+pacman::p_load(rio,here,skimr,ggplot2) #Load the packages with pacman
+```
+
+Use **here** to check your current working directory, which should
+be the directory of the R Project
+```{r eval=F}
+here()
+```
+
+If everything looks okay, let's import the data. If you have opened
+your R Project and the `Whitehall_like-Baseline.csv` file is saved in the 
+`~/my_project/data` subfolder, then this code should work:  
+```{r eval=F}
+w.hall.data <- import(here("data","Whitehall_like-Baseline.csv"), na.strings = ".")
+```
+
+Recall that **missing data** in R appears as `NA`. `NA` is not a string or a numeric
+value, but an indicator of missingness. You can use the argument `na.strings` to tell 
+`import()` which strings should be interpreted as `NA`. In the Whitehall dataset, the
+missing indicator for continuous variables is `.`. If the argument `na.strings` is
+omitted, the missing values `.` will be interpreted as `characters` and then the whole 
+column will be converted to characters. 
+
+## 1.2 Explore the data
+
+Before doing any analyses you should always examine your data to get a feel for 
+the data.  
+
+**Hint**: use commands from previous session > `summary()`, `dim()`, `nrow()`,
+`ncol()`, `names()`, `skim()`.  
+
+Let's try using `skim()` from the **skimr** package:  
+```{r}
+skim(w.hall.data)
+```
+
+Remember: `skim()` is a simple way to quickly explore your data but it is not 
+the only way. Moreover, `summary()`, `dim()`, `nrow()`, `ncol()`, `names()`, and other  functions from **Basic R** are really helpful for running quick checks while coding and are powerful tools for analyses. Learning different ways of 
+doing the same think might feel unnecessary, but it is actually quite handy.  
+
+***
+
+# 2. Calculating standard errors and confidence intervals manually
+
+> Here you will calculate SE and confidence intervals by hand, and interpret confidence intervals.
+
+## 2.1 Calculating SE
+
+In the lecture you saw that: 
+
+$$SE\ = \frac{SD}{\sqrt{n}}$$
+where $SD$ is the population standard deviation, $n$ is your sample
+size, and $SE$ is the standard deviation of the sampling distribution.  
+
+**Question 2.1.1** Fill in the table bellow, with answers to 3 decimal places:
+
+|    | APOB   | APOA1  | CRP | LDLC | VitD |
+|:---|--------|--------|-----|------|------|
+|n   |        |        |     |      |      |
+|SD  |        |        |     |      |      |
+|SE  |        |        |     |      |      |
+
+
+**HINT**: use the following commands  
+
+To calculate $n$
+```{r eval=F}
+APOB.n <- sum(!is.na(w.hall.data$APOB)) #remember to ask R not to include missing data
+APOB.n
+```
+To calculate $SD$
+```{r eval=F}
+APOB.sd <- sd(w.hall.data$APOB,na.rm=T) #remember to ask R to remove missing valyes
+APOB.sd
+round(APOB.sd,digits=3)
+```
+To calculate $SE$
+```{r eval=F, error=F}
+APOB.se <- APOB.sd / sqrt(APOB.n)  
+APOB.se
+round(APOB.se,3)
+```
+**Results to question 2.1.1**   
+
+The resulting table should look like this:  
+```{r echo=F}
+list.vars <- c("APOB", "APOA1", "CRP", "LDLC", "VitD")
+answ1 <- c()
+for(i in 1:length(list.vars)){
+  j <- which(names(w.hall.data) %in% list.vars[i])
+  #print(j)
+  stats <- c(
+    round(sum(!is.na(w.hall.data[[j]]))),
+    round(sd(w.hall.data[[j]],na.rm=T),3),
+    round(sd(w.hall.data[[j]],na.rm=T)/sqrt(sum(!is.na(w.hall.data[[j]]))),3)
+  )
+  #print(stats)
+#build.df<-data.frame(as.character(list.vars[i])=stats)
+answ1<-cbind(answ1,stats)
+}
+colnames(answ1)<-list.vars
+rownames(answ1)<-c("n","SD","SE")
+answ1<-as.data.frame(answ1)
+```
+
+```{r echo=F}
+knitr::kable(answ1,
+             caption = "Calculating SD and SE")
+```
+
+## 2.2 Calculating confidence intervals
+
+A 95% confidence interval for the sample mean is calculated using the formula:  
+
+$$ [ \hat{x}-Z_{0.975}*SE, \hat{x}+Z_{0.975}*SE ] $$
+
+**NOTE**: $Z_{0.975}$ is the 97.5% percentile of the standard normal distribution
+(~1.96 SD from the mean). This can be determined more precisely using the R function `qnorm(0.975)`.
+
+**Question 2.2.1** Plot a histogram for the variable LDLC and determine if this variable is approximately normally distributed.   
+
+**HINT**: Use code from previous sessions  
+```{r warning=F, message=F}
+ggplot(w.hall.data, aes(LDLC)) + # Plot histogram
+  geom_histogram(colour="white", fill="seagreen") + # A little bit of colour
+  theme_classic() # Use a ggplot classic theme
+```
+
+**Result to question 2.2.1**  
+
+It does look like the sample distribution of LDLC is approximately
+normally distributed.  
+
+Let's compare it with a normal curve:  
+```{r warning=F,message=F}
+# For this we will need a bit more code
+LDLC.mu = mean(w.hall.data$LDLC,na.rm = TRUE ) #Define sample mean
+LDLC.sd = sd(w.hall.data$LDLC,na.rm = TRUE ) # Define SD
+
+ggplot(w.hall.data, aes(LDLC)) + # Plot "histogram"
+  geom_histogram(aes(y=..density..), # Using density instead of counts as y-axis
+                 colour="white", fill="seagreen") + # A little bit of colour
+  stat_function(fun = dnorm, args = list(mean = LDLC.mu, sd = LDLC.sd)) + #Add normal distribution curve
+  theme_classic()
+```
+
+**Question 2.2.2** Using the formula above, calculate a 95% confidence interval for the mean LDL.  
+
+You can use a calculator (using ~1.96) and the data of the table above.  
+
+Or you can use the following code:
+```{r}
+LDLC.n    <- sum(!is.na(w.hall.data$LDLC)) # Sample size
+Za        <- qnorm(0.975) # Normal distribution cut-off
+ci.Z_LDLC <- c(
+  LDLC.mu-(LDLC.sd/sqrt(LDLC.n)*Za), # Lower limit of CI
+  LDLC.mu+(LDLC.sd/sqrt(LDLC.n)*Za)  # Upper limit of CI
+  ) 
+```
+
+Notice how `LDLC.sd/sqrt(LDLC.n)` is effectively $\frac{SD}{\sqrt{n}}$ which
+is the $SE$. The implication of this is that the larger $n$ is (i.e., the
+sample size), the smaller $SE$ and the narrower the CI will be (i.e., there
+will be less uncertainty around the estimated mean).  
+
+**Result to question 2.2.2**
+```{r}
+ci.Z_LDLC # Display in console
+```
+
+One way of interpreting this interval is as follows:
+"*We are 95% confident that the true mean LDL cholesterol (for this population)*
+*lies between 3.344 and 3.390 mmol/L*"
+
+# 3. Two sample t-test
+
+> In this section you will perform a t-test and interpret the results
+
+**NOTE**: the t-test is based on Student's t-distribution, which is
+slightly different when the sample size is small (n<30). 
+
+In larger sample sizes (n>=30), the t-distribution is effectively the same as the
+z-distribution (Gaussian or normal distribution, which was discussed in the lecture).  
+
+You can find [here](https://mgimond.github.io/Stats-in-R/z_t_tests.html#2_tests_of_significance_(two_independent_samples_comparison)) 
+more information about how $z$ and $t$ tests compare using R.
+
+## 3.1 Running a t-test for SBP and age
+
+For a one-sample t-test, the syntax is:  
+
+`t.test( x , conf.level = 0.95 , ...[options] )`  
+
+For a two-sample t-test, the following code should be used:  
+
+`t.test( x[group == 1], x[group == 2] , conf.level = 0.95 , ...[options] )`  
+
+For a two-sample test, x specifies the variable on which to perform the t-test, while the group variable defines the groups to be compared. An alternative formulation for the two sample t.test is:  
+
+`t.test( x ~ group, data = white.data)`  
+	
+See `?t.test` for details of the other options. One of the options available accounts for unequal variances across the groups, but you do not need to worry about this now.  
+
+Perform a t-test to compare the mean `LDLC` in those aged under 76 years with those aged 76 years old or more.   
+
+First, let's recode the variable `AGE` into a binary variable `agegp`. This can be achieved by adding a new variable to the dataframe `w.hall.data`
+
+```{r}
+w.hall.data$agegp <- NA 
+w.hall.data$agegp[w.hall.data$AGE <  76] = 1 
+w.hall.data$agegp[w.hall.data$AGE >= 76] = 2 
+```
+
+Now check the recoding worked using `table()`
+```{r}
+table(w.hall.data$agegp)
+```
+
+
+```{r eval=F}
+t.test(LDLC~agegp, data=w.hall.data)
+```
+
+**Question 3.1.1**: Complete the following table and interpret
+the results.
+
+**T-test comparing `LDLC` in those aged under 76 and aged 76 or more**
+```{r echo=F}
+desc <- c(
+  "mean LDLC where age<76  (x1)",
+  "mean LDLC where age>=76 (x2)",
+  "mean difference (x1-x2)",
+  "test statistic t",
+  "95% CI for mean difference",
+  "p-value"
+)
+value <- c(
+  "",
+  "",
+  "",
+  "",
+  "",
+  ""
+)
+data.md0 <- data.frame(
+  Description=desc,
+  Value=value
+)
+```
+```{r echo=F}
+knitr::kable(data.md0)
+```
+
+**Result to question 3.1.1**
+
+```{r}
+t.test(LDLC~agegp, data=w.hall.data)
+```
+
+By default the test does not assume that variances of the two groups are the same and tests the null hypothesis against the **‘two-sided’** alternative that the difference in means is not equal to zero.   
+
+The output shows the test statistic (‘t’) for the test (mean of the difference/SE of the difference) and the degrees of freedom (‘df’) for the test. On the same line it also gives the p-value for the two tailed tests that hypothesise the mean difference could be in any direction. This p-value is extremely small (<0.0001) indicating strong evidence against the null hypothesis.    
+
+The 95% confidence interval for the difference in the means is also reported along with the means in each age group.  
+
+```{r echo=F}
+desc <- c(
+  "mean LDLC where age<76  (x1)",
+  "mean LDLC where age>=76 (x2)",
+  "mean difference (x1-x2)",
+  "test statistic t",
+  "95% CI for mean difference",
+  "p-value"
+)
+value <- c(
+  round(mean(w.hall.data$LDLC[w.hall.data$agegp == 1],na.rm=T),2),
+  round(mean(w.hall.data$LDLC[w.hall.data$agegp == 2],na.rm=T),2),
+  round(
+    mean(w.hall.data$LDLC[w.hall.data$agegp == 1],na.rm=T) -
+    mean(w.hall.data$LDLC[w.hall.data$agegp == 2],na.rm=T),2),
+  round(t.test(LDLC~agegp, data=w.hall.data)$statistic[1], 3),
+  
+  paste0("(",
+         round(t.test(LDLC~agegp, data=w.hall.data)$conf.int[1],3),
+         "-",
+         round(t.test(LDLC~agegp, data=w.hall.data)$conf.int[2],3),
+         ")", sep=""),
+  round(t.test(LDLC~agegp, data=w.hall.data)$p.value,3)
+)
+data.md1 <- data.frame(
+  Description=desc,
+  Value=value
+)
+```
+**T-test comparing `LDLC` in those aged under 76 and aged 76 or more**
+```{r echo=F}
+knitr::kable(data.md1)
+```
+
+**Interpret this result:**  
+
+- There is sufficient evidence, at 5% level, to reject the null hypothesis; OR  
+- There is statistically significant difference, at 5% level, between the two groups  
+
+***
+
+# 4. Power and sample size
+
+> In this section, you will practice some general commands for estimating power and sample sizes, irrespective of study design. 
+
+## 4.1 The `power` function
+
+Calculations for power and sample size in R can be performed using the `power.test` functions. If you look at the help file, you will see that you can use these functions to compute a sample size, the power, or an effect size.  
+
+You do not need to have a data set loaded.  
+
+### Power calculations for two means
+
+The syntax looks like this:
+```{r eval=F}
+power.t.test(n = NULL, delta = NULL, sd = 1, sig.level = 0.05,
+             power = NULL,
+             type = c("two.sample", "one.sample", "paired"),
+             alternative = c("two.sided", "one.sided"))
+```
+**Arguments**  
+
+| | |
+|:----|:--------|
+|n|Number of observations (per group)|
+|delta|True difference in means|
+|sd|Standard deviation|
+|sig.level|Significance level (Type I error probability)|
+|power|Power of test (1 minus Type II error probability)|
+|type|Type of t test|
+|alternative|One- or two-sided test. Can be abbreviated|
+
+Exactly one of the parameters `n`, `delta`, `power`, `sd`, and `sig.level` must be passed as `NULL`, and that parameter is determined from the others.  
+  
+See `help(power.t.test)` for more details.  
+
+You need to choose the method you are calculating a power estimate for. To do this, ask yourself if you have 1 sample, 2 independent samples or 2 paired samples? And do you want to compare means from continuous outcomes or proportions from binary/categorical outcomes (see `power.prop.test`)?  
+
+Before proceeding, remind yourself of some of the key concepts from the lecture:
+
+**Question 4.1.1**: 
+
+- What information/parameters do you need before you can estimate the sample size needed for a particular study?  
+
+**Result to question 4.1.1**
+
+You need to choose a level of significance you will accept and the amount of power you want to have, i.e. the chance of detecting a difference if one exists. For two means you would need the difference in the means and the standard deviation (SD).  
+
+**Question 4.1.2**
+
+- What information/parameters do you need before you can calculate the power of a given sample size and study?  
+
+**Result to question 4.1.2**
+
+You need to determine a level of significance and the sample size for means. For two means you would need the difference in the means and the standard deviation (SD).  
+
+Using the `power.t.test` function, answer the following questions.  
+
+**Question 4.1.3**  
+
+Estimate the **sample size** needed to compare the mean systolic blood pressure (SBP) in two populations. From a pilot study, you think that the group with lower blood pressure will have a mean SBP of 120 mm Hg, and the standard deviation (SD) of both groups will be 15 mm Hg. You have decided that you are interested in a minimum difference of 5 mm Hg, and you want 90% power, and a 5% significance level.  
+
+**Result to question 4.1.3**  
+
+```{r}
+power.t.test(delta=5, sd=15, sig.level=0.05, power=0.9)
+```
+The estimated sample size: 382 (191 per group)  
+
+**Question 4.1.4**  
+
+Estimate the sample size needed to compare the mean total cholesterol between two groups of men, with versus without coronary heart disease (CHD). Based on a previous study, you think the mean total cholesterol will be 5.5 mmol/l (SD: 1 mmol/l) amongst men without CHD, and 6.0 mmol/l (SD: 1 mmol/l) amongst men with CHD. Assume you want 90% power, and a 5% significance level.  
+
+**Result to question 4.1.4**  
+
+```{r}
+power.t.test(delta=0.5, sd=1, sig.level=0.05, power=0.9)
+```
+The estimated sample size: 172 (86 per group)
+
+**Question 4.1.5**  
+
+You have now found some other studies, looking at the same question as in question **4.1.4**, which give different estimates for the difference between the mean values of total cholesterol in the two groups, varying from 0.1 mmol/l to 1.0 mmol/l. What would be your estimated sample size if the mean total cholesterol in men with CHD is 1.0 mmol/l higher than in men without CHD? What if it was only 0.25 mmol/l higher? [Assume that your previous estimate of mean cholesterol amongst men without CHD (5.5 mmol/l) is correct].  
+
+**Result to question 4.1.5**  
+Difference of 1.0 mmol/L
+```{r}
+power.t.test(delta=1, sd=1, sig.level=0.05, power=0.9) 
+```
+Difference of 0.25 mmol/L
+```{r}
+power.t.test(delta=0.25, sd=1, sig.level=0.05, power=0.9)
+```
+Note how much the sample size needed changes, depending on the magnitude of the difference we expect to detect.  
+
+**Question 4.1.6**  
+
+Plot a graph to illustrate how power changes with sample size (200 to 2000), for
+the study described in **4.1.3**
+
+**Hints**:
+
+Use a vector in order to generate a list of powers for a list of sample sizes; we can generate a list of sample sizes using the following command:
+
+```{r eval=F}
+samplesizes <- seq(from=200, to=2000, by=200)
+```
+And then use this instead of a value in our `power.prop.test.`  
+
+- Use $power to save only the powers from the results
+- Use `geom_point()` 
+- Add `gep,_line` to connect dots
+
+**Result to question 4.1.6**  
+Define the sample sizes and calculate the power for each sample size
+```{r}
+samplesizes <- seq(from=200, to=2000, by=200)
+power.samplesizes <- power.prop.test(n=samplesizes, p1=0.1, p2=0.15)$power
+```
+Have a look at the calculated powers
+```{r}
+power.samplesizes
+```
+Now, let's plot our results
+```{r}
+ggplot(mapping=aes(x=samplesizes, y=power.samplesizes)) +
+  geom_line() +
+  geom_point() +
+  theme_classic() +
+  xlab("Sample size") +
+  ylab("Expected power") +
+  ggtitle("Power by sample size")
+    
+```

@@ -13,8 +13,8 @@ knitr::opts_chunk$set(echo = TRUE)
 Follow the instructions here[https://support.rstudio.com/hc/en-us/articles/200526207-Using-RStudio-Projects]
 ```{r}
 if (!require("pacman")) install.packages("pacman")
-if(webshot::is_phantomjs_installed()==F)webshot::install_phantomjs()
 pacman::p_load(gifski, ggplot2, rio, here, janitor, skimr, forcats, lubridate, tidyverse, gtsummary, rstatix, flextable, gt, webshot)
+if(webshot::is_phantomjs_installed()==F)webshot::install_phantomjs()
 ```
 
 # 1. Create datasets used for lecture and practicals
@@ -107,7 +107,7 @@ step.table <- rbind(step.table,build.df)
 }
 ```
 
-Export ste-pwise populated tables as png
+Export step-wise populated tables as png
 ```{r}
 step.table.1 <-  
   step.table[1,] %>%
@@ -299,8 +299,16 @@ As part of the learning objectives is to merge datasets,
 I will split the original data and preserve the ID column
 
 ```{r}
-steps_test_1 <- dplyr::select(steps_test,one_of("ID", "H1", "M3", "M4", "M11A", "M12A", "M13A"))
-steps_test_2 <- dplyr::select(steps_test,-c(H1:M13A))
+#steps_test_1 <- dplyr::select(steps_test,one_of("id", "H1", "M3", "M4", "M11A", "M12A", "M13A"))
+#steps_test_2 <- dplyr::select(steps_test,-c(H1:M13A))
+steps_export <- steps_test %>%
+  mutate(gender = sex_fct) %>%
+  select(one_of("gender","age","curr_smkr","daily_smkr","curr_alc","freq_alc","bp_last_meas","height_cm","weight_kg","sbp_1","sbp_2","sbp_3")) 
+  
+   # Originally coded as 1 and 2
 ```
 
-## 1.3 Export two datasets
+## 1.3 Export three datasets
+```{r}
+export(steps_export, here("data","WHO-STEPS-training.csv")) 
+```
