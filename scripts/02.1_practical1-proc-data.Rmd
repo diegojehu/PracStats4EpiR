@@ -2,13 +2,27 @@
 title: "Practical 1 - Processing data"
 author: "Diego Aguilar-Ramirez"
 date: "`r format(Sys.Date())`"
-output:
-  pdf_document:
-    df_print: paged
-    toc: true
-    toc_depth: 2
-    latex_engine: xelatex #Added this as pdflatex (default) could not process emoji unicode
+output: 
+  rmdformats::readthedown:
+    code_folding: show
+    self_contained: true
+    thumbnails: true
+    lightbox: true
+    css: custom.css
+    #gallery: false
+    #highlight: tango
 ---
+<!-- --- -->
+<!-- title: "Practical 1 - Processing data" -->
+<!-- author: "Diego Aguilar-Ramirez" -->
+<!-- date: "`r format(Sys.Date())`" -->
+<!-- output: -->
+<!--   pdf_document: -->
+<!--     df_print: paged -->
+<!--     toc: true -->
+<!--     toc_depth: 2 -->
+<!--     latex_engine: xelatex #Added this as pdflatex (default) could not process emoji unicode -->
+<!-- --- -->
 <!-- --- -->
 <!-- title: "Practical 1 - Processing data" -->
 <!-- author: "Diego Aguilar-Ramirez" -->
@@ -231,7 +245,7 @@ How do data usually look like in `R`?
 (constants, data structures, functions, graphs) that can be assigned
 to a variable  
 
-```{r out.width="75%", fig.align='center', fig.link="http://venus.ifca.unican.es/Rintro/dataStruct.html",echo=F}
+```{r out.width="100%", fig.align='center', fig.link="http://venus.ifca.unican.es/Rintro/dataStruct.html",echo=F}
 knitr::include_graphics("img/R_data_structures.png")
 ```
 
@@ -622,6 +636,8 @@ new.steps.data.2<-subset(steps.data,
                          age > 40,
                          select = c(age, bmi, gender))
 ```
+
+***
 
 # Summary
 

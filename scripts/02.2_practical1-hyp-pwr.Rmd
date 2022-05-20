@@ -2,16 +2,32 @@
 title: "Practical 2 - Estimation, hypothesis testing, and power"
 author: "Sarah Lewington & Diego Aguilar-Ramirez"
 date: "`r format(Sys.Date())`"
-output:
-  html_document:
-    df_print: paged
-    theme: journal
-    toc: true
-    toc_float: true
-    toc_collapsed: true
-    toc_depth: 2
-  pdf_document: default
+output: 
+  rmdformats::readthedown:
+    code_folding: show
+    self_contained: true
+    thumbnails: true
+    lightbox: true
+    css: custom.css
+    #gallery: false
+    #highlight: tango
 ---
+
+<!-- --- -->
+<!-- title: "Practical 2 - Estimation, hypothesis testing, and power" -->
+<!-- author: "Sarah Lewington & Diego Aguilar-Ramirez" -->
+<!-- date: "`r format(Sys.Date())`" -->
+<!-- output: -->
+<!--   html_document: -->
+<!--     df_print: paged -->
+<!--     theme: journal -->
+<!--     toc: true -->
+<!--     toc_float: true -->
+<!--     toc_collapsed: true -->
+<!--     toc_depth: 2 -->
+<!--   pdf_document: default -->
+<!-- --- -->
+
 <!-- --- -->
 <!-- title: "Practical 2 - Estimation, hypothesis testing, and power" -->
 <!-- author: "Sarah Lewington & Diego Aguilar-Ramirez" -->

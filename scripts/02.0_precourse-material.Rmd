@@ -3,16 +3,30 @@ title: "Pre-course material"
 course: "Introduction to Statistics with R"
 author: "Diego Aguilar-Ramirez"
 date: "`r format(Sys.Date())`"
-output:
-  html_document:
-    df_print: paged
-    theme: journal
-    toc: true
-    toc_float: true
-    toc_collapsed: true
-    toc_depth: 2
+output: 
+  rmdformats::readthedown:
+    code_folding: show
+    self_contained: true
+    thumbnails: true
+    lightbox: true
+    css: custom.css
+    #gallery: false
+    #highlight: tango
 ---
-
+<!-- --- -->
+<!-- title: "Pre-course material" -->
+<!-- course: "Introduction to Statistics with R" -->
+<!-- author: "Diego Aguilar-Ramirez" -->
+<!-- date: "`r format(Sys.Date())`" -->
+<!-- output: -->
+<!--   html_document: -->
+<!--     df_print: paged -->
+<!--     theme: journal -->
+<!--     toc: true -->
+<!--     toc_float: true -->
+<!--     toc_collapsed: true -->
+<!--     toc_depth: 2 -->
+<!-- --- -->
 <!-- --- -->
 <!-- title: "Pre-course material" -->
 <!-- course: "Introduction to Statistics with R" -->
@@ -42,9 +56,9 @@ knitr::opts_chunk$set(echo = TRUE)
 This practical will walk you through the set-up steps needed for
 this course. This practical is considered **pre-course** material.  
 
-In this pre-course practical you will instal **R** and **RStudio**. 
+>In this pre-course practical you will instal **R** and **RStudio**. 
 You will also learn about general tips on how to **organise** your data 
-and files in preparation for data analyses. After this, you will be  
+and files in preparation for data analyses. After this, you will be 
 introduced to **R projects** and **R scripts**. Finally, you will also
 learn about **R packages** and how to install them.  
 
