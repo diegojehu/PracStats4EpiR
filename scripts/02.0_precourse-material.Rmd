@@ -54,13 +54,9 @@ knitr::opts_chunk$set(echo = TRUE)
 **Welcome!**  
 
 This practical will walk you through the set-up steps needed for
-this course. This practical is considered **pre-course** material.  
+this course. This practical is part of the **pre-course** material.  
 
->In this pre-course practical you will instal **R** and **RStudio**. 
-You will also learn about general tips on how to **organise** your data 
-and files in preparation for data analyses. After this, you will be 
-introduced to **R projects** and **R scripts**. Finally, you will also
-learn about **R packages** and how to install them.  
+>In this practical you will instal **R** and **RStudio**. You will also learn about general tips on how to **organise** your data and files in preparation for data analyses. After this, you will be introduced to **R projects** and **R scripts**. Finally, you will also learn about **R packages** and how to install them.  
 
 ***
 
@@ -79,13 +75,13 @@ your ability to install **R packages** (see bellow) will be affected.
 
 1. Go to [CRAN](https://cran.r-project.org/bin/windows/base/)  
 2. Click on **Download R 4.2.0 for Windows** to download the self-installing executable to install R (version 4.2.0) from CRAN as `R-4.2.0-win.exe`  
-3. Run `R-3.6.1-win.exe` choosing all the defaults on the install  
+3. Run `R-4.2.0-win.exe` choosing all the defaults on the install  
 4. Now that **R** is installed, you need to download and install **RStudio**  
 
 ### To Install RStudio
 
-1. Go to [RStudio](https://www.rstudio.com/products/rstudio/download/) and click on the **Download RStudio for Windows** button (`RStudio-2022.02.2-485.exe`)   
-2. Run the `RStudio-2022.02.2-485.exe` file and follow the installation instructions  
+1. Go to [RStudio](https://www.rstudio.com/products/rstudio/download/) and click on the **Download RStudio for Windows** button (`RStudio-2022.02.2-492.exe`)   
+2. Run the `RStudio-2022.02.2-492.exe` file and follow the installation instructions  
 
 
 ## Instructions for Mac users
@@ -100,23 +96,25 @@ your ability to install **R packages** (see bellow) will be affected.
 ### To Install RStudio
 
 1. Go to [RStudio](https://www.rstudio.com/products/rstudio/download/)  
-2. Click on **macOS 10.15+**  (`RStudio-2022.02.2-485.dmg`)   
+2. Click on **macOS 10.15+**  (`RStudio-2022.02.2-492.dmg`)   
 3. Save the `.dmg` file on your computer, double-click it to open, and then drag and drop it to your applications folder  
 
 ## RStudio
 
-**RStudio** facilitates using **R** via a graphic interface. As described in [The Epidemiologist R Handbook](https://epirhandbook.com/en/r-basics.html#rstudio-orientation) 
+**RStudio** facilitates using **R** using a graphic interface. As described in [The Epidemiologist R Handbook](https://epirhandbook.com/en/r-basics.html#rstudio-orientation) 
 "*You can think of R as being the engine of a vehicle, doing the crucial work,* 
 *and RStudio as the body of the vehicle (with seats, accessories, etc.) that*
 *helps you actually use the engine to move forward!*"  
 
-**Open RStudio** (make sure it is **RStudio** and not **R**)  
+**Open RStudio** (make sure it is **RStudio** and not **R**):  
 
 ```{r fig.link="https://epirhandbook.com/en/images/RStudio_overview.PNG", out.width="100%", fig.align='center', echo=FALSE}
 knitr::include_graphics("img/RStudio_overview.png")
 ```
 
-**RStudio** displays four rectangle mini-windows, called **panes**  
+**Click** on the image to enlarge  
+
+**RStudio** displays four rectangle mini-windows, called **panes**.  
 
 You will find out more about the panes further down in this page.  
 
@@ -127,28 +125,30 @@ You will find out more about the panes further down in this page.
 ## Rationale  
 
 **Organising** data and any other files required
-for your analyses is the first step in data cleaning. Importantly, having
+for your analyses is the first step in any data analysis project. You will learn more
+about data cleaning in the course but it is worth mentioning that having
 a clear and systematic approach to data cleaning in general, and organising
 files in particular, is at the core of **reproducibility** and **open science**.   
 
-An important part of organising your files involve how you name your files 
-(data, scripts, plots, etc) and how you structure your folders, subfolders,
-and the files within (aka the **directory tree**).  
+An important part of organising your project involves how you name your files 
+(data, scripts, plots, etc.) and how you structure your folders and sub-folders
+(aka the **directory tree**).  
 
 ### How to organise my files   
  
 **Consistency** and **logic** are key! You want to make sure that your files 
-are organised in such a way that you'll spend little to no time finding files
+are organised in such a way that you spend little to no time finding files
 while working. This will in turn facilitate a faster and less error-prone
-workflow. Aditionally, a clear directory tree structure will make things
-easier for others when reproducing, reusing, or repurposing your work.  
+workflow. Additionally, a well-structured directory tree will facilitate 
+reproducing, reusing, or re-purposing your work (for you and for others).  
 
 ```{r fig.link="https://libguides.princeton.edu/c.php?g=102546&p=930626", out.width="30%", fig.align='center', echo=FALSE}
 knitr::include_graphics("img/FileStructure.png")
 ```
 
 **For example:** all my `~/my_project/` folders tend to have my R scripts in the
-root folder and have (at least) 3 sub-folders:  
+**root folder** (i.e., the folder where all the files relevant to a specific 
+project are located) and tend to always have (at least) the following 3 sub-folders:  
 
 - `~/my_project/data/`  
 - `~/my_project/output/`  
@@ -161,16 +161,16 @@ for file names is essential to avoid errors.
 
 General tips for a clear nomenclature include the following:  
 
-- **No spaces**: it is simply easier to read, and prevents errors when 
-reading files  
-- **No special characters**: can also make errors happen (but `.`,`-` or `_` 
-are useful instead of spaces)  
+- **No spaces**: prevents errors when importing data files or sourcing other 
+scripts (natural spaces between words can be replaced by `-` or `_`)  
+- **No special characters**: can also make errors happen (except `.`,`-` or `_` 
+as above)  
 - **Self-descriptive**: in such a way that it is easy to identify what each
 file contains (or does!)  
 - **Embed logic**: if there is an order that scripts or files follow it is
 good practice to add this to the name   
 
-For example: consider a hypothetical research project that analyses data from
+**For example**: consider a hypothetical research project that analyses data from
 a survey in Mexico City that took place in 2015.  
 
 The following **filename** uses no naming convention.    
@@ -188,7 +188,7 @@ knitr::include_graphics("img/filenames.png")
 On the other hand, the following scripts implement the same data analyses
 than the above file, but in a **step-wise** approach. Additionally, filenames 
 describe the **order** in which the scripts should be run, which is informative
-for the developer but also to ***others***. Finally, the appropriate
+for the developer but also to others. Finally, the appropriate
 use of special characters faciliates reading while keeping the chance of
 errors low.  
 
@@ -209,23 +209,21 @@ files is good practice for data analysis.
 R Projects facilitate organising your project files and is a good habit to
 catch-up on early on your R learning journey.  
 
-As described in the Epidemiologist R Handbook, "[***R projects***](https://epirhandbook.com/en/r-projects.html)
+As described in the **Epidemiologist R Handbook**, "[***R projects***](https://epirhandbook.com/en/r-projects.html)
 *enable your work to be bundled in a portable, self-contained folder.* 
 *Within the project, all the relevant scripts, data files, figures/outputs,*
 *and history are stored in sub-folders and importantly - the* ***working directory***
 *is the project's root folder.*"  
 
 You can read more about R projects in [this section](https://r4ds.had.co.nz/workflow-projects.html) from the
-R for Data Science textbook.  
-
-**Let's create an R project**
+**R for Data Science** textbook and in the [RStudio website](https://support.rstudio.com/hc/en-us/articles/200526207-Using-RStudio-Projects).   
 
 ### Create an R Project
 
 From **RStudio**
 
 ```{r out.width="100%", fig.align='center', echo=F}
-knitr::include_graphics("img/RStudio-1.png")
+# knitr::include_graphics("img/RStudio-1.png")
 ```
 
 - Go to **File** > **New Project**...  
@@ -246,18 +244,16 @@ You now have an RStudio project called **scripts**. On the background, RStudio c
 
 It also created a file called `scripts.Rproj` within this new folder (alongside with other very useful files you need not to worry about at the moment).  
 
-You can find more information about RStudio projects [here](https://support.rstudio.com/hc/en-us/articles/200526207-Using-RStudio-Projects).  
-
 ***
 
 ## R Scripts
 
 A script is a text-based file where you can collect the instructions
 given to R to conduct your analyses and produce your results. This facilitates
-keeping track of what you've done overtime and allows you to quickly re-do
-previous work. Importantly, it also helps identifying errors and acting on them.  
+keeping track of the work done overtime and allows to quickly re-do
+analyses. Importantly, it also helps identifying errors and acting on them.  
 
-Let's create an R script.  
+### Create an R script 
 
 Go to **File** > **New File** > **R Script**  
 
@@ -265,17 +261,17 @@ A new **pane** on the left hand side of the **RStudio** window should automatica
 
 The **source pane** is effectively a basic text editor where you can type in your code in one (or multiple) script files.
 
-Let's scribble a little note into our script that  gives us a hint about what this script is about.   
+Let's scribble a little note onto our script that gives us a hint about what this script is about.   
 
-In **Untitled1** script you just created, type in:
+In the **Untitled1** script you just created, type in:
 
 ``` {r}
 # Pre-course material
 # This is my first R script
 ```
 
-**TIP**: The `#` sign is used to "comment out" annotations.
-It is always good practice to leave notes to yourself (or to others) about 
+**TIP**: The `#` sign is used to *comment out* annotations.
+It is good practice to leave notes to yourself (or to others) about 
 what your scripts do.  
 
 Now, let's save the script:
@@ -299,10 +295,9 @@ data processing and analysis. In these days, most of the R coders use several
 packages for their work.  
 
 You can read more about R packages [here](https://epirhandbook.com/en/r-basics.html#packages) in the 
-Epi R Handbook (which will be referenced multiple times throughout the practicals).
-There, you'll be able to find a comprehensive list of `r emo::ji("package")``r emo::ji("package")``r emo::ji("package")`
-that are useful for epidemiological data analysis. This handbook is also a 
-great source for self-paced learning of R for epidemiologists.  
+**Epidemiologist R Handbook**. There, you will find a comprehensive list of `r emo::ji("package")``r emo::ji("package")``r emo::ji("package")` that are useful for epidemiological data analysis. 
+This handbook is also a great source for self-paced learning of R for 
+epidemiologists of any experience level.    
 
 ### Installing R packages
 
@@ -318,7 +313,7 @@ if (!require("pacman")) install.packages("pacman")
 ```
 
 All this does is check if **pacman** is already installed. If not, then it installs
-it. (Don't worry a lot about understanding what each bit is doing just now, this will
+it. (Don't worry too much about understanding what each bit is doing just now, this will
 be covered further down on the course.)  
 
 > Now run it!
@@ -334,9 +329,9 @@ Select the text you just typed into the script and either:
 I prefer the `Ctrl`+`Enter` option.  
 
 You will notice that text appears on the bottom left **pane**, in the **Console**
-tab. The **console** is where R tells you what it's going on. There, you will find the output 
+tab. The **console** is where R tells you what is going on. There, you will find the output 
 of operations that you have requested to R. Error messages also appear here. You can also
-used R as a glorified calculator and type directly into the **console**. The result
+use R as a glorified calculator and type directly into the **console**. The result
 of those calculations will appear there. Bear in mind that anything you do (i.e. type into)
 the console will not be saved in your R script.
 
@@ -354,10 +349,10 @@ we will be using for this session.
 Run the following line:
 
 ```{r eval=F}
-pacman::p_load(ggplot2) # The package "ggplot2" is a very famous for tool used for visualization in R
+pacman::p_load(ggplot2) # The package "ggplot2" is a very famous tool used for visualization in R
 ```
 
-You'll find out more about useful packages throughout the practicals. However, 
+You will find out more about useful packages throughout the practicals. However, 
 one thing to bear in mind is that you only need to *load* these packages once
 per R session. This means you need not to be constantly loading packages every
 time you want to use them in your scripts.  
@@ -412,10 +407,15 @@ to always save your R scripts and try to remember not relying on RStudio saving 
 # Summary
 
 To recap, you installed **R** and **Rstudio**. You then created an **R project** where
-you can keep all the scripts you will be using throughout this course. You also
-created your first **R script**, called `00.pre-course-practical.R` which currently
-looks like this:
+you can keep files such as scripts and data. You also
+created your first **R script**, called `00.pre-course-practical.R`. 
 
+You then installed the package **pacman** and then, using this package,
+you installed and *loaded* the package **ggplot2**. Finally,
+you tried out **ggplot2** to make a histogram.  
+
+Finally, you saved your script, which currently
+looks like this:
 
 ```{r eval=F}
 # Pre-course material
@@ -430,7 +430,4 @@ ggplot(iris, aes(Sepal.Length)) +
   theme_classic()
 ```
 
-You then installed the package **pacman** and then, using this package,
-you installed and *loaded* the package **ggplot2**. Finally,
-you tried out **ggplot2** to make a histogram.  
-
+before proceeding to close RStudio.
